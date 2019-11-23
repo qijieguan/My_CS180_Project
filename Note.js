@@ -6,7 +6,7 @@ import 'firebase/auth';
 import Masonry from 'react-masonry-css'
 import DeleteIcon from '@material-ui/icons/DeleteOutlined'
 import ShareIcon from '@material-ui/icons/Share'
-import ArchiveIcon from '@material-ui/icons/Archive'       //added code
+import ArchiveIcon from '@material-ui/icons/Archive'       
 import AddTagIcon from '@material-ui/icons/AddCircleOutlined'
 import DelTagIcon from '@material-ui/icons/RemoveCircleOutlined'
 import EditIcon from '@material-ui/icons/Edit'
@@ -269,7 +269,8 @@ class Note extends Component {
                 </form>
               </Popup>
               <IconButton onClick={this.handleArchive.bind(this, eachNote.date)}>
-                <ArchieveIcon/>
+                <ArchiveIcon/>
+              </IconButton>
               <Popup trigger={<IconButton><AddTagIcon/></IconButton>}>
                 <form onSubmit={this.handleAddTag.bind(this, eachNote.date)} className="input-form">
                   <input
