@@ -5,8 +5,8 @@ import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import Masonry from 'react-masonry-css'
 import DeleteIcon from '@material-ui/icons/DeleteOutlined'
+import ArchiveIcon from '@material-ui/icons/Archive'
 import ShareIcon from '@material-ui/icons/Share'
-import ArchiveIcon from '@material-ui/icons/Archive'       
 import AddTagIcon from '@material-ui/icons/AddCircleOutlined'
 import DelTagIcon from '@material-ui/icons/RemoveCircleOutlined'
 import EditIcon from '@material-ui/icons/Edit'
@@ -61,28 +61,28 @@ var handleShare = function(noteID) {
                 userExists = true;
               }
             }
-          });
-        if(share_email == myUserEmail){
-         alert("You cannot share with yourself");
-        }
-        else if(!userExists){
-            alert("That account does not exist");
-        }
-        else{
-          let userRef = firebase.database().ref('notes/' + my_User + '/');
-          firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
-            var note_map = JSON.parse(JSON.stringify(note));
-            var shareList = JSON.parse(note_map.sharesWith);
-            shareList.push(cleanEmail);
-            shareList = JSON.stringify(shareList);
-            userRef.child(noteID).update({'sharesWith': shareList});
-          });
+            if(share_email == myUserEmail){
+              alert("You cannot share with yourself");
+            }
+            else if(!userExists){
+              alert("That account does not exist");
+            }
+            else{
+              let userRef = firebase.database().ref('notes/' + my_User + '/');
+              firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
+                var note_map = JSON.parse(JSON.stringify(note));
+                var shareList = JSON.parse(note_map.sharesWith);
+                shareList.push(cleanEmail);
+                shareList = JSON.stringify(shareList);
+                userRef.child(noteID).update({'sharesWith': shareList});
+              });
 
-          firebase.database().ref('shared_notes/' + cleanEmail + '/' + my_User + '/' + noteID).set({
-            noteID: noteID
+              firebase.database().ref('shared_notes/' + cleanEmail + '/' + my_User + '/' + noteID).set({
+                noteID: noteID
+              });
+              alert("Successfully shared with " + share_email);
+            }
           });
-          alert("Successfully shared with " + share_email);
-        }
         }
     };
 
@@ -99,7 +99,7 @@ var handleArchive = function(noteID) {
             noteID: noteID
   });
   alert("Successfully archived note by " + myUserEmail);
-}
+};
 
 class Note extends Component {
   constructor(props) {
