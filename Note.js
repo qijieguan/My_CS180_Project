@@ -85,14 +85,21 @@ var handleShare = function(noteID) {
         }
         }
     };
-/*
-var handleArchive = function(note_ID) {
-  const userDB = firebase.database().ref('users');
+
+var handleArchive = function(noteID) {
+  let userRef = firebase.database().ref('notes/' + my_User + '/');
+          firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
+            var note_map = JSON.parse(JSON.stringify(note));
+            var archiveList = JSON.parse(note_map.archive);
+            archiveList.push(true);
+            archiveList = JSON.stringify(archiveList);
+            userRef.child(noteID).update({'archive': archiveList});
+  });
   firebase.database().ref('archive_notes/' + my_User + '/' + noteID).set({
             noteID: noteID
   });
   alert("Successfully archived note by " + myUserEmail);
-}*/
+}
 
 class Note extends Component {
   constructor(props) {
