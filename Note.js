@@ -85,6 +85,14 @@ var handleShare = function(noteID) {
         }
         }
     };
+/*
+var handleArchive = function(note_ID) {
+  const userDB = firebase.database().ref('users');
+  firebase.database().ref('archive_notes/' + my_User + '/' + noteID).set({
+            noteID: noteID
+  });
+  alert("Successfully archived note by " + myUserEmail);
+}*/
 
 class Note extends Component {
   constructor(props) {
@@ -412,18 +420,6 @@ class Note extends Component {
     }
 
   handleDelete(noteID) {
-    var user = this.state.myUser;
-    firebase.database().ref('notes/' + this.state.myUser + '/' + noteID + '/').once('value').then(function(note) {
-      var note_map = JSON.parse(JSON.stringify(note));
-      var shareList = JSON.parse(note_map.sharesWith);
-      for(var note in shareList){
-        firebase.database().ref('shared_notes/' + shareList[note] + '/' + user + '/' + noteID + '/').remove();
-      }
-    });
-    firebase.database().ref('notes/' + user + '/' + noteID).remove();
-  }
-
-  handleArchive(noteID) {
     var user = this.state.myUser;
     firebase.database().ref('notes/' + this.state.myUser + '/' + noteID + '/').once('value').then(function(note) {
       var note_map = JSON.parse(JSON.stringify(note));
