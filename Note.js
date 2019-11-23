@@ -6,7 +6,7 @@ import 'firebase/auth';
 import Masonry from 'react-masonry-css'
 import DeleteIcon from '@material-ui/icons/DeleteOutlined'
 import ShareIcon from '@material-ui/icons/Share'
-import ArchiveIcon from '@material-ui/icons/Archive'       //new code
+import ArchiveIcon from '@material-ui/icons/Archive'       //added code
 import AddTagIcon from '@material-ui/icons/AddCircleOutlined'
 import DelTagIcon from '@material-ui/icons/RemoveCircleOutlined'
 import EditIcon from '@material-ui/icons/Edit'
@@ -268,6 +268,8 @@ class Note extends Component {
                   <Button>Share</Button>
                 </form>
               </Popup>
+              <IconButton onClick={this.handleArchive.bind(this, eachNote.date)}>
+                <ArchieveIcon/>
               <Popup trigger={<IconButton><AddTagIcon/></IconButton>}>
                 <form onSubmit={this.handleAddTag.bind(this, eachNote.date)} className="input-form">
                   <input
@@ -409,6 +411,18 @@ class Note extends Component {
     }
 
   handleDelete(noteID) {
+    var user = this.state.myUser;
+    firebase.database().ref('notes/' + this.state.myUser + '/' + noteID + '/').once('value').then(function(note) {
+      var note_map = JSON.parse(JSON.stringify(note));
+      var shareList = JSON.parse(note_map.sharesWith);
+      for(var note in shareList){
+        firebase.database().ref('shared_notes/' + shareList[note] + '/' + user + '/' + noteID + '/').remove();
+      }
+    });
+    firebase.database().ref('notes/' + user + '/' + noteID).remove();
+  }
+
+  handleArchive(noteID) {
     var user = this.state.myUser;
     firebase.database().ref('notes/' + this.state.myUser + '/' + noteID + '/').once('value').then(function(note) {
       var note_map = JSON.parse(JSON.stringify(note));
