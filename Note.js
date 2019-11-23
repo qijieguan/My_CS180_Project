@@ -50,55 +50,58 @@ const Button = ({ children, ...other }) => {
 
 var handleShare = function(noteID) {
         return function(event){
-          event.preventDefault();
-          var cleanEmail = share_email.replace('.','`');
-          var userExists = false;
-          const userDB = firebase.database().ref('users');
-          userDB.on('value', (snapshot) => {
+            event.preventDefault();
+            var cleanEmail = share_email.replace('.','`');
+            var userExists = false;
+            const userDB = firebase.database().ref('users');
+            userDB.on('value', (snapshot) => {
             let users = snapshot.val();
             for(var user in users){
-              if(user == cleanEmail){
-                userExists = true;
-              }
+                if(user == cleanEmail){
+                    userExists = true;
+                }
             }
             if(share_email == myUserEmail){
-              alert("You cannot share with yourself");
+                alert("You cannot share with yourself");
             }
             else if(!userExists){
-              alert("That account does not exist");
+                alert("That account does not exist");
             }
             else{
-              let userRef = firebase.database().ref('notes/' + my_User + '/');
-              firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
-                var note_map = JSON.parse(JSON.stringify(note));
-                var shareList = JSON.parse(note_map.sharesWith);
-                shareList.push(cleanEmail);
-                shareList = JSON.stringify(shareList);
-                userRef.child(noteID).update({'sharesWith': shareList});
-              });
+                let userRef = firebase.database().ref('notes/' + my_User + '/');
+                firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
+                    var note_map = JSON.parse(JSON.stringify(note));
+                    var shareList = JSON.parse(note_map.sharesWith);
+                    shareList.push(cleanEmail);
+                    shareList = JSON.stringify(shareList);
+                    userRef.child(noteID).update({'sharesWith': shareList});
+                });
 
-              firebase.database().ref('shared_notes/' + cleanEmail + '/' + my_User + '/' + noteID).set({
-                noteID: noteID
-              });
-              alert("Successfully shared with " + share_email);
-            }
-          });
-        }
-    };
+                firebase.database().ref('shared_notes/' + cleanEmail + '/' + my_User + '/' + noteID).set({
+                    noteID: noteID
+                });
+                alert("Successfully shared with " + share_email);
+             }
+        });
+    }
+};
 
 var handleArchive = function(noteID) {
-  let userRef = firebase.database().ref('notes/' + my_User + '/');
-          firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
-            var note_map = JSON.parse(JSON.stringify(note));
-            var archiveList = JSON.parse(note_map.archive);
-            archiveList.push(true);
-            archiveList = JSON.stringify(archiveList);
-            userRef.child(noteID).update({'archive': archiveList});
-  });
-  firebase.database().ref('archive_notes/' + my_User + '/' + noteID).set({
-            noteID: noteID
-  });
-  alert("Successfully archived note by " + myUserEmail);
+  //return(event) {
+      //event.preventDefault();
+      let userRef = firebase.database().ref('notes/' + my_User + '/');
+      firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
+        var note_map = JSON.parse(JSON.stringify(note));
+        var archiveList = JSON.parse(note_map.archive);
+        archiveList.push(true);
+        archiveList = JSON.stringify(archiveList);
+        userRef.child(noteID).update({'archive': archiveList});
+      });
+      firebase.database().ref('archive_notes/' + my_User + '/' + noteID).set({
+                noteID: noteID
+      });
+      alert("Successfully archived note by " + myUserEmail);
+  //});
 };
 
 class Note extends Component {
