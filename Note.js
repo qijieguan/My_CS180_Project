@@ -6,7 +6,7 @@ import 'firebase/auth';
 import Masonry from 'react-masonry-css'
 import DeleteIcon from '@material-ui/icons/DeleteOutlined'
 import ShareIcon from '@material-ui/icons/Share'
-import ArchiveIcon from '@material-ui/icons/Archive'
+import ArchiveIcon from '@material-ui/icons/Archive'            //added code
 import AddTagIcon from '@material-ui/icons/AddCircleOutlined'
 import DelTagIcon from '@material-ui/icons/RemoveCircleOutlined'
 import EditIcon from '@material-ui/icons/Edit'
@@ -86,6 +86,21 @@ var handleShare = function(noteID) {
           });
         }
     };
+
+var handleArchive = function(noteID) {
+              let userRef = firebase.database().ref('notes/' + my_User + '/');
+              firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
+                var note_map = JSON.parse(JSON.stringify(note));
+                var archiveList = JSON.parse(note_map.noteArchived);            //added code
+                archiveList.push("true");
+                archiveList = JSON.stringify(archiveList);
+                userRef.child(noteID).update({'noteArchived': archiveList});
+              });
+              firebase.database().ref('archived_notes/' + myUserEmail + '/' + my_User + '/' + noteID).set({
+                noteID: noteID
+              });
+              alert("Successfully archived by " + myUserEmail);
+};
 
 class Note extends Component {
   constructor(props) {
