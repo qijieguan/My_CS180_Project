@@ -132,6 +132,7 @@ class Composer extends Component {
          noteTags: "[]",
          sharesWith: "[]",
          color: "#FFFFFF",
+         isArchived: "False",           //added code
     });
       
     this.setState(initialState);
