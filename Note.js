@@ -287,7 +287,7 @@ class Note extends Component {
                 <DeleteIcon/>
               </IconButton>
               <IconButton onClick={this.handleEdit.bind(this, eachNote.date, eachNote.subject, eachNote.description)}><EditIcon/></IconButton>
-              <IconButton onClick={this.handleArchive.bind(this, eachNote.date)}>
+              <IconButton onClick={handleArchive.bind(eachNote.date)}>
                 <ArchiveIcon/>
               </IconButton>
               <Popup trigger={<IconButton><ShareIcon/></IconButton>}>
