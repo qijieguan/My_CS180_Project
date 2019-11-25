@@ -34,7 +34,7 @@ class Note extends Component {
       if (user) {
         var cleanEmail = user.email.replace('.','`');
         const archiveDB = firebase.database().ref('archive_notes/' + cleanEmail + '/');
-        sharedDB.on('value', (snapshot) => {
+        archiveDB.on('value', (snapshot) => {
           let listUID = snapshot.val();
           let detail = [];
           for (let UID in listUID) {
