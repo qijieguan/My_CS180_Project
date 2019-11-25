@@ -5,7 +5,6 @@ import * as firebase from 'firebase/app';
 import 'firebase/auth';
 import Masonry from 'react-masonry-css'
 import DeleteIcon from '@material-ui/icons/DeleteOutlined'
-import ArchiveIcon from '@material-ui/icons/Archive'
 import ShareIcon from '@material-ui/icons/Share'
 import AddTagIcon from '@material-ui/icons/AddCircleOutlined'
 import DelTagIcon from '@material-ui/icons/RemoveCircleOutlined'
@@ -33,6 +32,7 @@ var share_email;
 var curr_tag;
 var my_User;
 var myUserEmail;
+var tagSearch;
 
 const Input = ({ ...other }) => {
     return (
@@ -50,59 +50,41 @@ const Button = ({ children, ...other }) => {
 
 var handleShare = function(noteID) {
         return function(event){
-            event.preventDefault();
-            var cleanEmail = share_email.replace('.','`');
-            var userExists = false;
-            const userDB = firebase.database().ref('users');
-            userDB.on('value', (snapshot) => {
+          event.preventDefault();
+          var cleanEmail = share_email.replace('.','`');
+          var userExists = false;
+          const userDB = firebase.database().ref('users');
+          userDB.on('value', (snapshot) => {
             let users = snapshot.val();
             for(var user in users){
-                if(user == cleanEmail){
-                    userExists = true;
-                }
+              if(user == cleanEmail){
+                userExists = true;
+              }
             }
             if(share_email == myUserEmail){
-                alert("You cannot share with yourself");
+              alert("You cannot share with yourself");
             }
             else if(!userExists){
-                alert("That account does not exist");
+              alert("That account does not exist");
             }
             else{
-                let userRef = firebase.database().ref('notes/' + my_User + '/');
-                firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
-                    var note_map = JSON.parse(JSON.stringify(note));
-                    var shareList = JSON.parse(note_map.sharesWith);
-                    shareList.push(cleanEmail);
-                    shareList = JSON.stringify(shareList);
-                    userRef.child(noteID).update({'sharesWith': shareList});
-                });
+              let userRef = firebase.database().ref('notes/' + my_User + '/');
+              firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
+                var note_map = JSON.parse(JSON.stringify(note));
+                var shareList = JSON.parse(note_map.sharesWith);
+                shareList.push(cleanEmail);
+                shareList = JSON.stringify(shareList);
+                userRef.child(noteID).update({'sharesWith': shareList});
+              });
 
-                firebase.database().ref('shared_notes/' + cleanEmail + '/' + my_User + '/' + noteID).set({
-                    noteID: noteID
-                });
-                alert("Successfully shared with " + share_email);
-             }
-        });
-    }
-};
-
-var handleArchive = function(noteID) {
-  //return(event) {
-      //event.preventDefault();
-      let userRef = firebase.database().ref('notes/' + my_User + '/');
-      firebase.database().ref('notes/' + my_User + '/' + noteID + '/').once('value').then(function(note) {
-        var note_map = JSON.parse(JSON.stringify(note));
-        var archiveList = JSON.parse(note_map.noteArchived);
-        archiveList.push(true);
-        archiveList = JSON.stringify(archiveList);
-        userRef.child(noteID).update({'noteArchived': archiveList});
-      });
-      firebase.database().ref('archive_notes/' + my_User + '/' + noteID).set({
+              firebase.database().ref('shared_notes/' + cleanEmail + '/' + my_User + '/' + noteID).set({
                 noteID: noteID
-      });
-      alert("Successfully archived note by " + myUserEmail);
-  //});
-};
+              });
+              alert("Successfully shared with " + share_email);
+            }
+          });
+        }
+    };
 
 class Note extends Component {
   constructor(props) {
@@ -172,7 +154,6 @@ class Note extends Component {
               subject: notes[note].noteSubject,
               description: notes[note].noteDesc,
               tags: notes[note].noteTags,
-              archived: notes[note].noteArchived,
             });
           }
           self.setState({
@@ -201,10 +182,19 @@ class Note extends Component {
 
   render () {
       
+      function separateTags(tags){
+          if(tags.length <= 2){
+              return "";
+          }
+          else {
+            return "Tags: " + tags.replace(/"/g, '').replace(/\[/g, '').replace(/\]/g, '');
+          }
+      }
+      
     function outputTags(tags){
           let str = "Tags: ";
           if(tags.length <= 2){
-              return str + "N/A";
+              return "";
           }
           else {
             return "Tags: " + tags.replace(/"/g, '').replace(/\[/g, '').replace(/\]/g, '');
@@ -232,10 +222,7 @@ class Note extends Component {
               tagButtons.push(nextName);
               
           }
-          //alert(document.getElementsByClassName("tagButtons"));
-          //document.getElementsByClassName("tagButtons")[0].innerHTML = "<button>YES</button>";
-          
-          //========
+        
           if(tags.length <= 2){
               return <p>No tags to delete</p>;
           }
@@ -244,15 +231,16 @@ class Note extends Component {
           for(let i = 0; i < tagButtons.length; i++){
               var txt = tagButtons[i];
               retArr.push(<button></button>);
-              //alert(document.getElementById('tagButtons'));
           }
           return retArr;
       }
 
     function textToHtml(html)
     {
+        
         let arr = html.split("</br>");
         html = arr.reduce((el, a) => el.concat(a, <br />), []);
+
         return html;
     }
       
@@ -262,6 +250,11 @@ class Note extends Component {
       <p>Filter by:</p>
       <Button onClick={this.filterRecent.bind(this)}>Most Recent</Button>
       <Button onClick={this.filterAlphabetical.bind(this)}>Alphabetical</Button>
+      <input
+        placeholder='Search by tag'
+        type='text'
+        onChange={this.searchTagHandler.bind(this)}
+      />
       </div>
       {this.state.notes.map((eachNote) => {
         return (
@@ -287,9 +280,6 @@ class Note extends Component {
                   <Button>Share</Button>
                 </form>
               </Popup>
-              <IconButton onClick={this.handleArchive.bind(this, eachNote.date)}>
-                <ArchiveIcon/>
-              </IconButton>
               <Popup trigger={<IconButton><AddTagIcon/></IconButton>}>
                 <form onSubmit={this.handleAddTag.bind(this, eachNote.date)} className="input-form">
                   <input
@@ -355,6 +345,48 @@ class Note extends Component {
     </div>
       
     );
+  }
+
+
+  searchTagHandler = (event) => {
+      tagSearch = event.target.value.toLowerCase();
+      
+      var detail = [];
+      
+      //Get list of all notes by this user
+      var targetRef = firebase.database().ref('notes/' + this.state.myUser + '/').once('value', function(snapshot) {
+          snapshot.forEach(function(childSnapshot) {
+              //alert("checking note#: " + childSnapshot.key);
+              var noteTags = childSnapshot.val().noteTags;
+              
+              var sepTags = "";
+              
+              if(noteTags.length > 2){
+                sepTags = noteTags.replace(/"/g, '').replace(/\[/g, '').replace(/\]/g, '');
+              }
+              
+              var testArr = String(sepTags).split(',');
+              
+              // For this note, check if there is a tag with substr of tagSearch
+              for(let tag in testArr){
+                  if(testArr[tag].toLowerCase().includes(tagSearch)){
+                        detail.push({
+                          date: childSnapshot.key,
+                          subject: childSnapshot.val().noteSubject,
+                          description: childSnapshot.val().noteDesc,
+                          tags: childSnapshot.val().noteTags,
+                        });
+                      break;
+                  }
+              }
+          });
+        });
+      
+      this.state.notes = detail;
+      this.forceUpdate();
+      
+      //alert("RETURNED ARRAY: " + detail);
+      
   }
 
   handleDeleteTag(noteID, tag){
